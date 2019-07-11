@@ -330,21 +330,24 @@ function Neo4jD3(_selector, _options) {
         // d3.schemeCategory10,
         // d3.schemeCategory20,
         return [
+            '#679EC1', // sage blue
+            '#6DB56D', // sage green
+            '#EB8231', // sage orange
+            '#405f9e', // navy blue
+            '#ffab1a', // dark orange
+            '#78cecb', // green #2,
+            '#fcea7e', // light yellow
             '#68bdf6', // light blue
             '#6dce9e', // green #1
             '#faafc2', // light pink
             '#f2baf6', // purple
             '#ff928c', // light red
-            '#fcea7e', // light yellow
             '#ffc766', // light orange
-            '#405f9e', // navy blue
             '#a5abb6', // dark gray
-            '#78cecb', // green #2,
             '#b88cbb', // dark purple
             '#ced2d9', // light gray
             '#e84646', // dark red
             '#fa5f86', // dark pink
-            '#ffab1a', // dark orange
             '#fcda19', // dark yellow
             '#797b80', // black
             '#c9d96f', // pistacchio
@@ -411,17 +414,63 @@ function Neo4jD3(_selector, _options) {
     }
 
     function icon(d) {
-        var code;
+        var i, iconsForLabel, iconMap, code, iconLevel, label, labelPropertyValue, property, value, key, keys;
 
-        if (options.iconMap && options.showIcons && options.icons) {
-            if (options.icons[d.labels[0]] && options.iconMap[options.icons[d.labels[0]]]) {
-                code = options.iconMap[options.icons[d.labels[0]]];
-            } else if (options.iconMap[d.labels[0]]) {
-                code = options.iconMap[d.labels[0]];
-            } else if (options.icons[d.labels[0]]) {
-                code = options.icons[d.labels[0]];
+        iconMap = {}
+        for (key in options.icons) {
+            if (options.icons.hasOwnProperty(key)) {
+                keys = key.split('|');
+
+                if (!iconMap[keys[0]]) {
+                    iconMap[keys[0]] = [key];
+                } else {
+                    iconMap[keys[0]].push(key);
+                }
             }
         }
+
+        // if (options.iconMap && options.showIcons && options.icons) {
+        //     if (options.icons[d.labels[0]] && options.iconMap[options.icons[d.labels[0]]]) {
+        //         code = options.iconMap[options.icons[d.labels[0]]];
+        //     } else if (options.iconMap[d.labels[0]]) {
+        //         code = options.iconMap[d.labels[0]];
+        //     } else if (options.icons[d.labels[0]]) {
+        //         code = options.icons[d.labels[0]];
+        //     }
+        // }
+
+        if (options.icons) {
+            iconsForLabel = iconMap[d.labels[0]];
+            // console.log(iconsForLabel)
+            if (iconsForLabel) {
+                iconLevel = 0;
+
+                for  (i = 0; i < iconsForLabel.length; i++) {
+                    labelPropertyValue = iconsForLabel[i].split('|');
+
+                    switch (labelPropertyValue.length) {
+                        case 3:
+                        value = labelPropertyValue[2];
+                        /* falls through */
+                        case 2:
+                        property = labelPropertyValue[1];
+                        /* falls through */
+                        case 1:
+                        label = labelPropertyValue[0];
+                    }
+
+                    if (d.labels[0] === label &&
+                        (!property || d.properties[property] !== undefined) &&
+                        (!value || d.properties[property] === value)) {
+                        if (labelPropertyValue.length > iconLevel) {
+                            code = options.iconMap[options.icons[iconsForLabel[i]]];
+                            iconLevel = labelPropertyValue.length;
+                        }
+                    }
+                }
+            }
+        }
+
 
         return code;
     }
@@ -430,7 +479,9 @@ function Neo4jD3(_selector, _options) {
         var i, imagesForLabel, img, imgLevel, label, labelPropertyValue, property, value;
 
         if (options.images) {
+            console.log(options.icons)
             imagesForLabel = options.imageMap[d.labels[0]];
+            // console.log(imagesForLabel)
 
             if (imagesForLabel) {
                 imgLevel = 0;
